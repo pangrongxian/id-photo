@@ -78,6 +78,14 @@
         "navigationBarBackgroundColor": "#000000",
         "navigationBarTextStyle": "white"
       }
+    },
+    {
+      "path": "pages/refine/index",
+      "style": {
+        "navigationBarTitleText": "手动精修",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
     }
   ],
   "globalStyle": {

@@ -75,14 +75,19 @@ function loadPathImage(canvas, path) {
  * @param {object}   opts.faceInfo   - 人脸检测信息（可选）
  * @returns {Promise<string>} 输出图片的临时路径
  */
-export async function compositePhoto({ fgBase64, bgRgb, targetW, targetH, canvas, faceInfo = null }) {
+export async function compositePhoto({ fgBase64, bgRgb, targetW, targetH, canvas, faceInfo = null, beauty = null, scaleFactor = 3 }) {
   const ctx = canvas.getContext('2d')
-  canvas.width  = targetW
-  canvas.height = targetH
+  
+  // 实际画布尺寸（高清）
+  const actualW = Math.round(targetW * scaleFactor)
+  const actualH = Math.round(targetH * scaleFactor)
+  
+  canvas.width  = actualW
+  canvas.height = actualH
 
   // 1. 填充背景色
   ctx.fillStyle = `rgb(${bgRgb[0]},${bgRgb[1]},${bgRgb[2]})`
-  ctx.fillRect(0, 0, targetW, targetH)
+  ctx.fillRect(0, 0, actualW, actualH)
 
   // 2. 绘制前景（抠图结果，带透明通道）
   const fgImg = await loadBase64Image(canvas, fgBase64, 'image/png')
@@ -104,8 +109,13 @@ export async function compositePhoto({ fgBase64, bgRgb, targetW, targetH, canvas
     const faceHeightPx = Math.abs(chinY - topY)
 
     // b. 计算缩放比例，使人脸高度符合目标比例
-    const targetFaceHeight = targetH * headHeightRatio
-    const scale = targetFaceHeight / faceHeightPx
+    const targetFaceHeight = actualH * headHeightRatio
+    let scale = targetFaceHeight / faceHeightPx
+
+    // 强制约束：缩放后的宽高必须大于等于画布宽高，防止任何一边留出缝隙
+    const minScaleW = actualW / imgW
+    const minScaleH = actualH / imgH
+    scale = Math.max(scale, minScaleW, minScaleH)
 
     // c. 计算缩放后的尺寸和位置
     drawW = imgW * scale
@@ -113,21 +123,38 @@ export async function compositePhoto({ fgBase64, bgRgb, targetW, targetH, canvas
     // 将人脸中心对准画布的视觉中心（垂直方向偏上）
     const faceCenterX = location.left + location.width / 2
     const faceCenterY = topY + faceHeightPx / 2
-    drawX = (targetW / 2) - faceCenterX * scale
-    drawY = (targetH * 0.4) - faceCenterY * scale // 目标视觉中心在40%高度位置
+    drawX = (actualW / 2) - faceCenterX * scale
+    drawY = (actualH * 0.4) - faceCenterY * scale // 目标视觉中心在40%高度位置
+
+    // d. 边界约束：确保图片不脱离画布边缘（吸附边缘）
+    if (drawX > 0) drawX = 0
+    if (drawX + drawW < actualW) drawX = actualW - drawW
+    if (drawY > 0) drawY = 0
+    if (drawY + drawH < actualH) drawY = actualH - drawH
 
   } else {
     // 降级处理：若无人脸信息，则使用常规居中方式
-    // 等比缩放，垂直居中偏上（证件照人脸位置惯例）
-    const scale  = Math.min(targetW / fgImg.width, targetH / fgImg.height)
+    // 等比缩放，确保填满画布（cover模式，防止留缝）
+    const scale  = Math.max(actualW / fgImg.width, actualH / fgImg.height)
     drawW  = fgImg.width  * scale
     drawH  = fgImg.height * scale
-    drawX  = (targetW - drawW) / 2
+    drawX  = (actualW - drawW) / 2
     // 人脸偏上：垂直偏移 -5%
-    drawY  = Math.max(0, (targetH - drawH) / 2 - targetH * 0.05)
+    drawY  = (actualH - drawH) / 2 - actualH * 0.05
+
+    // 边界约束
+    if (drawX > 0) drawX = 0
+    if (drawX + drawW < actualW) drawX = actualW - drawW
+    if (drawY > 0) drawY = 0
+    if (drawY + drawH < actualH) drawY = actualH - drawH
   }
 
   ctx.drawImage(fgImg, drawX, drawY, drawW, drawH)
+
+  // 3. 应用美颜滤镜
+  if (beauty && hasBeauty(beauty)) {
+    await applyBeautyFilter(ctx, actualW, actualH, beauty, canvas)
+  }
 
   return canvasToFile(canvas)
 }
@@ -197,10 +224,21 @@ function applyBilateralFilter(imageData, strength) {
   // 根据强度调整参数
   const sigmaColor = 0.1 + (strength / 100) * 0.4 // 色彩域sigma
   const sigmaSpace = 1 + (strength / 100) * 4     // 空间域sigma
-  const radius = Math.ceil(sigmaSpace * 2)
+  // 限制最大半径，防止高清图处理过慢导致卡死
+  const radius = Math.min(Math.ceil(sigmaSpace * 2), 4)
 
   const temp = new Uint8ClampedArray(data.length)
   temp.set(data)
+
+  // 预计算空间权重，大幅提升性能
+  const wSpaceArr = new Float32Array((radius * 2 + 1) * (radius * 2 + 1))
+  let idx = 0
+  for (let j = -radius; j <= radius; j++) {
+    for (let k = -radius; k <= radius; k++) {
+      const spaceDist = Math.sqrt(j*j + k*k)
+      wSpaceArr[idx++] = Math.exp(- (spaceDist * spaceDist) / (2 * sigmaSpace * sigmaSpace))
+    }
+  }
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
@@ -208,6 +246,7 @@ function applyBilateralFilter(imageData, strength) {
       let rSum = 0, gSum = 0, bSum = 0
       let wSum = 0
 
+      let wIdx = 0
       for (let j = -radius; j <= radius; j++) {
         for (let k = -radius; k <= radius; k++) {
           const nY = y + j
@@ -220,17 +259,16 @@ function applyBilateralFilter(imageData, strength) {
             const dg = temp[i+1] - temp[nI+1]
             const db = temp[i+2] - temp[nI+2]
             const colorDist = Math.sqrt(dr*dr + dg*dg + db*db) / 255
-            const spaceDist = Math.sqrt(j*j + k*k)
 
             const wColor = Math.exp(- (colorDist * colorDist) / (2 * sigmaColor * sigmaColor))
-            const wSpace = Math.exp(- (spaceDist * spaceDist) / (2 * sigmaSpace * sigmaSpace))
-            const weight = wColor * wSpace
+            const weight = wColor * wSpaceArr[wIdx]
 
             rSum += temp[nI] * weight
             gSum += temp[nI+1] * weight
             bSum += temp[nI+2] * weight
             wSum += weight
           }
+          wIdx++
         }
       }
       data[i]   = rSum / wSum
@@ -285,9 +323,11 @@ function clamp(v) { return Math.max(0, Math.min(255, Math.round(v))) }
  * @param {object}  opts.canvas     - canvas节点
  * @returns {Promise<{path: string, cols: number, rows: number, total: number}>}
  */
-export async function generatePrintLayout({ photoPath, photoW, photoH, canvas }) {
+export async function generatePrintLayout({ photoPath, photoW, photoH, paper, canvas }) {
   const ctx     = canvas.getContext('2d')
-  const { w: paperW, h: paperH, gap } = PRINT_PAPER
+  const paperW  = paper ? paper.w : PRINT_PAPER.w
+  const paperH  = paper ? paper.h : PRINT_PAPER.h
+  const gap     = paper ? paper.gap : PRINT_PAPER.gap
 
   canvas.width  = paperW
   canvas.height = paperH
@@ -391,7 +431,7 @@ export function saveToAlbum(filePath) {
 /**
  * 快速渲染预览（缩小尺寸，提升响应速度）
  */
-export async function renderPreview({ fgBase64, bgRgb, displayW, displayH, canvas, beauty }) {
+export async function renderPreview({ fgBase64, bgRgb, displayW, displayH, canvas, faceInfo = null, beauty }) {
   const dpr = wx.getSystemInfoSync().pixelRatio || 2
   const ctx  = canvas.getContext('2d')
 
@@ -405,11 +445,50 @@ export async function renderPreview({ fgBase64, bgRgb, displayW, displayH, canva
 
   // 前景
   const fgImg = await loadBase64Image(canvas, fgBase64, 'image/png')
-  const scale  = Math.min(displayW / fgImg.width, displayH / fgImg.height)
-  const drawW  = fgImg.width  * scale
-  const drawH  = fgImg.height * scale
-  const drawX  = (displayW - drawW) / 2
-  const drawY  = Math.max(0, (displayH - drawH) / 2 - displayH * 0.05)
+  
+  let drawX, drawY, drawW, drawH
+  if (faceInfo && faceInfo.face_shape && faceInfo.face_shape.landmark) {
+    const { location, face_shape } = faceInfo
+    const imgW = fgImg.width
+    const imgH = fgImg.height
+
+    const headHeightRatio = 0.5
+    const chinY = face_shape.landmark[6].y
+    const topY = face_shape.landmark[73].y
+    const faceHeightPx = Math.abs(chinY - topY)
+
+    let scale = (displayH * headHeightRatio) / faceHeightPx
+    const minScaleW = displayW / imgW
+    const minScaleH = displayH / imgH
+    scale = Math.max(scale, minScaleW, minScaleH)
+
+    drawW = imgW * scale
+    drawH = imgH * scale
+    const faceCenterX = location.left + location.width / 2
+    const faceCenterY = topY + faceHeightPx / 2
+    drawX = (displayW / 2) - faceCenterX * scale
+    drawY = (displayH * 0.4) - faceCenterY * scale
+
+    if (drawX > 0) drawX = 0
+    if (drawX + drawW < displayW) drawX = displayW - drawW
+    if (drawY > 0) drawY = 0
+    if (drawY + drawH < displayH) drawY = displayH - drawH
+
+  } else {
+    // 使用与 compositePhoto 相同的 cover 缩放逻辑，防止留缝
+    const scale  = Math.max(displayW / fgImg.width, displayH / fgImg.height)
+    drawW  = fgImg.width  * scale
+    drawH  = fgImg.height * scale
+    drawX  = (displayW - drawW) / 2
+    drawY  = (displayH - drawH) / 2 - displayH * 0.05
+
+    // 边界约束
+    if (drawX > 0) drawX = 0
+    if (drawX + drawW < displayW) drawX = displayW - drawW
+    if (drawY > 0) drawY = 0
+    if (drawY + drawH < displayH) drawY = displayH - drawH
+  }
+
   ctx.drawImage(fgImg, drawX, drawY, drawW, drawH)
 
   // 简化美颜预览（只应用亮度对比度，磨皮锐化在预览时跳过以提速）

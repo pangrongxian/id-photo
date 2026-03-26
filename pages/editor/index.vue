@@ -81,8 +81,11 @@
         <view v-if="seg.state === 'done'" class="seg-state">
           <view class="seg-ok-icon"><text>✓</text></view>
           <text class="seg-title">人像识别完成</text>
-          <text class="seg-sub">已成功分离人像，可以选择背景色了</text>
-          <button class="btn-next" @click="currentStep = 2">下一步：选背景色</button>
+          <text class="seg-sub">已成功分离人像，可继续操作</text>
+          <view class="seg-btn-group">
+            <button class="btn-ghost" @click="gotoRefine">手动微调</button>
+            <button class="btn-next" @click="currentStep = 2">下一步</button>
+          </view>
         </view>
 
         <!-- 失败 -->
@@ -174,7 +177,7 @@
 
 <script>
 import { BG_COLORS, PHOTO_SIZES, DEFAULT_BEAUTY } from '../../utils/config.js'
-import { fileToBase64, segmentHuman, detectFace, beautifyImage } from '../../utils/baidu.js'
+import { fileToBase64, segmentHuman, detectFace } from '../../utils/baidu.js'
 import { getCanvasNode, renderPreview, compositePhoto } from '../../utils/canvas.js'
 import { usePhotoStore } from '../../store/photo.js'
 import BeautyPanel from '../../components/BeautyPanel/index.vue'
@@ -197,6 +200,7 @@ export default {
 
       // Step 1
       seg: { state: 'loading', errMsg: '' },
+      faceInfo: null,
       segTips: [
         '照片越清晰，抠图效果越好',
         '建议使用正面照，光线均匀',
@@ -261,8 +265,12 @@ export default {
         const { base64 } = await fileToBase64(this.filePath)
         this.fgBase64 = await segmentHuman(base64)
 
-        // 补充人脸检测逻辑，但暂时不影响主流程
-        detectFace(base64).catch(console.error)
+        // 补充人脸检测逻辑，用于智能构图
+        try {
+          this.faceInfo = await detectFace(base64)
+        } catch (e) {
+          console.error('人脸检测失败，将使用默认居中构图', e)
+        }
 
         this.seg.state = 'done'
       } catch (e) {
@@ -293,6 +301,7 @@ export default {
           displayW:  this.previewW,
           displayH:  this.previewH,
           canvas,
+          faceInfo:  this.faceInfo,
           beauty:    isBeauty ? this.beauty : null,
         })
       } catch (e) {}
@@ -326,6 +335,10 @@ export default {
       this.doPreview(true)
     },
 
+    gotoRefine() {
+      uni.navigateTo({ url: '/pages/refine/index' })
+    },
+
     // ── Step 3 → 生成 ──
     async doGenerate() {
       if (this.generating) return
@@ -334,21 +347,16 @@ export default {
 
       try {
         const canvas = await getCanvasNode('outputCanvas', this)
-        uni.showLoading({ title: 'AI 深度美颜中…', mask: true })
-        const beautyOptions = {
-          whitening: this.beauty.brightness, // 借用亮度滑块控制美白
-          smoothing: this.beauty.smooth,     // 磨皮
-        }
-        const beautifiedFg = await beautifyImage(this.fgBase64, beautyOptions)
 
         uni.showLoading({ title: '生成高清图中…', mask: true })
         const outputPath = await compositePhoto({
-          fgBase64: beautifiedFg, // 使用美颜后的前景
+          fgBase64: this.fgBase64, // 直接使用前景，美颜在 compositePhoto 中处理
           bgRgb:    this.selectedColor.rgb,
           targetW:  this.selectedSize.w,
           targetH:  this.selectedSize.h,
           canvas,
           faceInfo: this.faceInfo,
+          beauty:   this.beauty,
         })
 
         uni.hideLoading()
@@ -473,6 +481,9 @@ page { background: #0f0e0c; }
   box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
 }
 .seg-state { display: flex; flex-direction: column; align-items: center; gap: 20rpx; }
+.seg-btn-group { display: flex; gap: 20rpx; width: 100%; margin-top: 20rpx; }
+.seg-btn-group .btn-ghost { flex: 1; background: transparent; color: #c9a84c; border: 1rpx solid #c9a84c; padding: 24rpx; font-size: 28rpx; }
+.seg-btn-group .btn-next { flex: 1.5; background: #c9a84c; color: #1a1400; border: none; padding: 24rpx; font-size: 28rpx; font-weight: 700; }
 .spinner {
   width: 100rpx; height: 100rpx; border-radius: 50%;
   border: 6rpx solid rgba(255, 255, 255, 0.05); border-top-color: #E6C875;

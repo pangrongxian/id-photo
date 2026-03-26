@@ -109,42 +109,6 @@ export async function detectFace(base64) {
 }
 
 /**
- * AI 深度美颜
- * @param {string} base64 - 图片base64
- * @param {object} options - 美颜参数
- * @returns {Promise<string>} - 美颜后图片的base64
- */
-export async function beautifyImage(base64, options) {
-  const token = await getBaiduToken()
-  return new Promise((resolve, reject) => {
-    uni.request({
-      url: `${BAIDU_CONFIG.BEAUTY_URL}?access_token=${token}`,
-      method: 'POST',
-      data: {
-        image: base64,
-        image_type: 'BASE64',
-        ...options,
-      },
-      header: { 'Content-Type': 'application/json' },
-      success(res) {
-        if (res.data && res.data.result) {
-          resolve(res.data.result.image)
-        } else {
-          const code = res.data?.error_code
-          const msg  = res.data?.error_msg || '美颜失败'
-          if (code === 6) { // Openapi unauthorized
-            reject(new Error('AI美颜服务未开通'))
-          } else {
-            reject(new Error(msg))
-          }
-        }
-      },
-      fail() { reject(new Error('网络请求失败')) },
-    })
-  })
-}
-
-/**
  * 图像增强（画质修复）
  * @param {string} base64 - 图片base64（不含前缀data:...）
  * @returns {Promise<string>} - 增强后图片的base64
