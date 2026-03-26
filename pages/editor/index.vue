@@ -174,7 +174,7 @@
 
 <script>
 import { BG_COLORS, PHOTO_SIZES, DEFAULT_BEAUTY } from '../../utils/config.js'
-import { fileToBase64, segmentHuman, detectFace } from '../../utils/baidu.js'
+import { fileToBase64, segmentHuman, detectFace, beautifyImage } from '../../utils/baidu.js'
 import { getCanvasNode, renderPreview, compositePhoto } from '../../utils/canvas.js'
 import { usePhotoStore } from '../../store/photo.js'
 import BeautyPanel from '../../components/BeautyPanel/index.vue'
@@ -334,13 +334,20 @@ export default {
 
       try {
         const canvas = await getCanvasNode('outputCanvas', this)
+        uni.showLoading({ title: 'AI 深度美颜中…', mask: true })
+        const beautyOptions = {
+          whitening: this.beauty.brightness, // 借用亮度滑块控制美白
+          smoothing: this.beauty.smooth,     // 磨皮
+        }
+        const beautifiedFg = await beautifyImage(this.fgBase64, beautyOptions)
+
+        uni.showLoading({ title: '生成高清图中…', mask: true })
         const outputPath = await compositePhoto({
-          fgBase64: this.fgBase64,
+          fgBase64: beautifiedFg, // 使用美颜后的前景
           bgRgb:    this.selectedColor.rgb,
           targetW:  this.selectedSize.w,
           targetH:  this.selectedSize.h,
           canvas,
-          beauty:   this.beauty,
           faceInfo: this.faceInfo,
         })
 

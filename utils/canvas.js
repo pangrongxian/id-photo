@@ -75,7 +75,7 @@ function loadPathImage(canvas, path) {
  * @param {object}   opts.faceInfo   - 人脸检测信息（可选）
  * @returns {Promise<string>} 输出图片的临时路径
  */
-export async function compositePhoto({ fgBase64, bgRgb, targetW, targetH, canvas, beauty = null, faceInfo = null }) {
+export async function compositePhoto({ fgBase64, bgRgb, targetW, targetH, canvas, faceInfo = null }) {
   const ctx = canvas.getContext('2d')
   canvas.width  = targetW
   canvas.height = targetH
@@ -128,11 +128,6 @@ export async function compositePhoto({ fgBase64, bgRgb, targetW, targetH, canvas
   }
 
   ctx.drawImage(fgImg, drawX, drawY, drawW, drawH)
-
-  // 3. 美颜处理（像素级操作）
-  if (beauty && hasBeauty(beauty)) {
-    await applyBeautyFilter(ctx, targetW, targetH, beauty, canvas)
-  }
 
   return canvasToFile(canvas)
 }

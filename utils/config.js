@@ -10,6 +10,7 @@ export const BAIDU_CONFIG = {
   TOKEN_URL:   'https://aip.baidubce.com/oauth/2.0/token',
   SEGMENT_URL: 'https://aip.baidubce.com/rest/2.0/image-classify/v1/body_seg',
   DETECT_URL:  'https://aip.baidubce.com/rest/2.0/face/v3/detect',
+  BEAUTY_URL:  'https://aip.baidubce.com/rest/2.0/image-process/v1/face_beautify',
   ENHANCE_URL: 'https://aip.baidubce.com/rest/2.0/image-process/v1/image_quality_enhance',
 }
 
