@@ -53,6 +53,7 @@
 
 <script>
 import { saveToAlbum } from '../../utils/canvas.js'
+import { fileToBase64, enhanceImage } from '../../utils/baidu.js'
 
 export default {
   name: 'EnhancePage',
@@ -86,12 +87,9 @@ export default {
       this.resultImage = ''
 
       try {
-        // 模拟 AI 处理延迟 (实际项目中这里应该调用百度 API 的图像增强接口)
-        // 百度 API 参考: https://ai.baidu.com/tech/imageprocess/image_quality_enhance
-        await new Promise(resolve => setTimeout(resolve, 2500))
-        
-        // 模拟处理成功，直接使用原图作为结果展示（实际应替换为 API 返回的图片）
-        this.resultImage = this.originalImage
+        const { base64 } = await fileToBase64(this.originalImage)
+        const resultBase64 = await enhanceImage(base64)
+        this.resultImage = `data:image/jpeg;base64,${resultBase64}`
         
         uni.showToast({ title: '修复完成', icon: 'success' })
 

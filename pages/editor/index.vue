@@ -126,7 +126,7 @@
 
       <view class="bottom-bar two-btn">
         <button class="btn-ghost-sm" @click="currentStep = 1">上一步</button>
-        <button class="btn-next-sm" @click="goToBeauty">下一步：美化</button>
+        <button class="btn-next-sm" @click="step2Next">下一步：美化</button>
       </view>
     </view>
 
@@ -165,12 +165,16 @@
       </view>
     </view>
 
+    <!-- 隐藏的高清输出 canvas -->
+    <canvas type="2d" id="outputCanvas"
+      style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;" />
+
   </view>
 </template>
 
 <script>
 import { BG_COLORS, PHOTO_SIZES, DEFAULT_BEAUTY } from '../../utils/config.js'
-import { fileToBase64, segmentHuman }               from '../../utils/baidu.js'
+import { fileToBase64, segmentHuman, detectFace } from '../../utils/baidu.js'
 import { getCanvasNode, renderPreview, compositePhoto } from '../../utils/canvas.js'
 import { usePhotoStore } from '../../store/photo.js'
 import BeautyPanel from '../../components/BeautyPanel/index.vue'
@@ -256,6 +260,10 @@ export default {
       try {
         const { base64 } = await fileToBase64(this.filePath)
         this.fgBase64 = await segmentHuman(base64)
+
+        // 补充人脸检测逻辑，但暂时不影响主流程
+        detectFace(base64).catch(console.error)
+
         this.seg.state = 'done'
       } catch (e) {
         this.seg = { state: 'error', errMsg: e.message || '未知错误，请重试' }
@@ -333,6 +341,7 @@ export default {
           targetH:  this.selectedSize.h,
           canvas,
           beauty:   this.beauty,
+          faceInfo: this.faceInfo,
         })
 
         uni.hideLoading()
@@ -357,6 +366,7 @@ export default {
   watch: {
     currentStep(val) {
       if (val === 2) this.onEnterColorStep()
+      if (val === 3) this.onEnterBeautyStep()
     },
   },
 }

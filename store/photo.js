@@ -6,6 +6,8 @@ export const usePhotoStore = defineStore('photo', {
     filePath: '',
     // 抠图后的前景 base64
     fgBase64: '',
+    // 人脸检测信息
+    faceInfo: null,
     // 最终生成的图片路径
     outputPath: '',
     

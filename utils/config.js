@@ -5,10 +5,12 @@
 // 百度AI API配置
 // 申请地址：https://ai.baidu.com → 人体分析 → 人像分割
 export const BAIDU_CONFIG = {
-  API_KEY:     'your-api-key',
-  SECRET_KEY:  'your-secret-key',
+  API_KEY:     'reQTFkIWz95hULNxcGhoyUhB',
+  SECRET_KEY:  'IscRLpsJIL1yLyBPTCFXovrxt3JFa0uJ',
   TOKEN_URL:   'https://aip.baidubce.com/oauth/2.0/token',
   SEGMENT_URL: 'https://aip.baidubce.com/rest/2.0/image-classify/v1/body_seg',
+  DETECT_URL:  'https://aip.baidubce.com/rest/2.0/face/v3/detect',
+  ENHANCE_URL: 'https://aip.baidubce.com/rest/2.0/image-process/v1/image_quality_enhance',
 }
 
 // 背景颜色（扩展到10种）

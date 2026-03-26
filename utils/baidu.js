@@ -80,6 +80,67 @@ export async function segmentHuman(base64) {
 }
 
 /**
+ * 人脸检测
+ * @param {string} base64 - 图片base64
+ * @returns {Promise<object>} - 人脸信息
+ */
+export async function detectFace(base64) {
+  const token = await getBaiduToken()
+  return new Promise((resolve, reject) => {
+    uni.request({
+      url: `${BAIDU_CONFIG.DETECT_URL}?access_token=${token}`,
+      method: 'POST',
+      data: {
+        image: base64,
+        image_type: 'BASE64',
+        face_field: 'face_shape,landmark',
+      },
+      header: { 'Content-Type': 'application/json' },
+      success(res) {
+        if (res.data && res.data.result && res.data.result.face_list.length > 0) {
+          resolve(res.data.result.face_list[0])
+        } else {
+          reject(new Error('未检测到人脸'))
+        }
+      },
+      fail() { reject(new Error('网络请求失败')) },
+    })
+  })
+}
+
+/**
+ * 图像增强（画质修复）
+ * @param {string} base64 - 图片base64（不含前缀data:...）
+ * @returns {Promise<string>} - 增强后图片的base64
+ */
+export async function enhanceImage(base64) {
+  const token = await getBaiduToken()
+  return new Promise((resolve, reject) => {
+    uni.request({
+      url: `${BAIDU_CONFIG.ENHANCE_URL}?access_token=${token}`,
+      method: 'POST',
+      data: `image=${encodeURIComponent(base64)}`,
+      header: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      timeout: 30000,
+      success(res) {
+        if (res.data && res.data.image) {
+          resolve(res.data.image)
+        } else {
+          const code = res.data?.error_code
+          const msg  = res.data?.error_msg || '画质增强失败'
+          if (code === 18) {
+            reject(new Error('每日免费额度已用完，请明天再试'))
+          } else {
+            reject(new Error(msg))
+          }
+        }
+      },
+      fail() { reject(new Error('网络请求失败，请检查网络后重试')) },
+    })
+  })
+}
+
+/**
  * 本地图片路径 → base64（同时返回宽高）
  */
 export function fileToBase64(filePath) {

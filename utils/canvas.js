@@ -72,9 +72,10 @@ function loadPathImage(canvas, path) {
  * @param {number}   opts.targetH    - 输出高度px
  * @param {object}   opts.canvas     - canvas节点
  * @param {object}   opts.beauty     - 美颜参数（可选）
+ * @param {object}   opts.faceInfo   - 人脸检测信息（可选）
  * @returns {Promise<string>} 输出图片的临时路径
  */
-export async function compositePhoto({ fgBase64, bgRgb, targetW, targetH, canvas, beauty = null }) {
+export async function compositePhoto({ fgBase64, bgRgb, targetW, targetH, canvas, beauty = null, faceInfo = null }) {
   const ctx = canvas.getContext('2d')
   canvas.width  = targetW
   canvas.height = targetH
@@ -86,13 +87,45 @@ export async function compositePhoto({ fgBase64, bgRgb, targetW, targetH, canvas
   // 2. 绘制前景（抠图结果，带透明通道）
   const fgImg = await loadBase64Image(canvas, fgBase64, 'image/png')
 
-  // 等比缩放，垂直居中偏上（证件照人脸位置惯例）
-  const scale  = Math.min(targetW / fgImg.width, targetH / fgImg.height)
-  const drawW  = fgImg.width  * scale
-  const drawH  = fgImg.height * scale
-  const drawX  = (targetW - drawW) / 2
-  // 人脸偏上：垂直偏移 -5%
-  const drawY  = Math.max(0, (targetH - drawH) / 2 - targetH * 0.05)
+  // 智能构图
+  let drawX, drawY, drawW, drawH
+  // 优先使用人脸识别信息进行智能构图
+  if (faceInfo && faceInfo.face_shape && faceInfo.face_shape.landmark) {
+    const { location, face_shape } = faceInfo
+    const imgW = fgImg.width
+    const imgH = fgImg.height
+
+    // 证件照头部占画面高度的比例（可调整）
+    const headHeightRatio = 0.5
+
+    // a. 计算人脸在原图中的实际高度（从下巴到头顶）
+    const chinY = face_shape.landmark[6].y
+    const topY = face_shape.landmark[73].y
+    const faceHeightPx = Math.abs(chinY - topY)
+
+    // b. 计算缩放比例，使人脸高度符合目标比例
+    const targetFaceHeight = targetH * headHeightRatio
+    const scale = targetFaceHeight / faceHeightPx
+
+    // c. 计算缩放后的尺寸和位置
+    drawW = imgW * scale
+    drawH = imgH * scale
+    // 将人脸中心对准画布的视觉中心（垂直方向偏上）
+    const faceCenterX = location.left + location.width / 2
+    const faceCenterY = topY + faceHeightPx / 2
+    drawX = (targetW / 2) - faceCenterX * scale
+    drawY = (targetH * 0.4) - faceCenterY * scale // 目标视觉中心在40%高度位置
+
+  } else {
+    // 降级处理：若无人脸信息，则使用常规居中方式
+    // 等比缩放，垂直居中偏上（证件照人脸位置惯例）
+    const scale  = Math.min(targetW / fgImg.width, targetH / fgImg.height)
+    drawW  = fgImg.width  * scale
+    drawH  = fgImg.height * scale
+    drawX  = (targetW - drawW) / 2
+    // 人脸偏上：垂直偏移 -5%
+    drawY  = Math.max(0, (targetH - drawH) / 2 - targetH * 0.05)
+  }
 
   ctx.drawImage(fgImg, drawX, drawY, drawW, drawH)
 
