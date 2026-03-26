@@ -1,0 +1,14 @@
+{
+  "name": "id-photo-miniapp",
+  "version": "1.0.0",
+  "description": "免费证件照制作，一键换背景色，支持多种证件尺寸",
+  "private": true,
+  "scripts": {
+    "dev:mp-weixin": "uni -p mp-weixin",
+    "build:mp-weixin": "uni build -p mp-weixin"
+  },
+  "dependencies": {
+    "pinia": "^2.1.7"
+  },
+  "devDependencies": {}
+}

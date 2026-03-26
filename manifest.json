@@ -1,0 +1,21 @@
+{
+    "name" : "证件照制作",
+    "appid" : "__UNI__7B0C401",
+    "description" : "免费证件照制作，一键换背景色，支持多种证件尺寸",
+    "versionName" : "1.0.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    "mp-weixin" : {
+        "appid" : "wx22de3592b50b9a54",
+        "setting" : {
+            "urlCheck" : false
+        },
+        "usingComponents" : true,
+        "permission" : {
+            "scope.writePhotosAlbum" : {
+                "desc" : "保存证件照到相册"
+            }
+        }
+    },
+    "vueVersion" : "3"
+}

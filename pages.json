@@ -1,0 +1,89 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "AI 影像工具箱",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/id-photo/index",
+      "style": {
+        "navigationBarTitleText": "智能证件照",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/editor/index",
+      "style": {
+        "navigationBarTitleText": "编辑证件照",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/beauty/index",
+      "style": {
+        "navigationBarTitleText": "美化调整",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/result/index",
+      "style": {
+        "navigationBarTitleText": "制作完成",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/print/index",
+      "style": {
+        "navigationBarTitleText": "打印排版",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/matting/index",
+      "style": {
+        "navigationBarTitleText": "AI 抠图",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/compress/index",
+      "style": {
+        "navigationBarTitleText": "格式转换与压缩",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/enhance/index",
+      "style": {
+        "navigationBarTitleText": "画质增强",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/sizes/index",
+      "style": {
+        "navigationBarTitleText": "选择证件照尺寸",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "AI 影像工具箱",
+    "navigationBarBackgroundColor": "#000000",
+    "backgroundColor": "#000000"
+  }
+}

@@ -1,0 +1,62 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+
+/* 颜色变量 - 苹果级高端深色系 */
+$uni-bg-color: #121212;
+$uni-bg-color-secondary: #1C1C1E;
+$uni-border-color: rgba(255, 255, 255, 0.08);
+
+/* 主色调：流金渐变 */
+$uni-color-primary: #E6C875;
+$uni-color-primary-dark: #C89D3C;
+$uni-main-gradient: linear-gradient(135deg, #E6C875 0%, #C89D3C 100%);
+
+/* 语义化颜色 */
+$uni-color-success: #34C759;
+$uni-color-warning: #FF9F0A;
+$uni-color-error: #FF453A;
+
+/* 文字基本颜色 */
+$uni-text-color: #E8E0D0;
+$uni-text-color-grey: #8E8E93;
+$uni-text-color-placeholder: #5A5A5E;
+$uni-text-color-disable: #3A3A3C;
+
+/* 尺寸与间距 */
+$uni-border-radius-lg: 32rpx;
+$uni-border-radius-base: 24rpx;
+$uni-border-radius-sm: 12rpx;
+
+$uni-spacing-row-lg: 32rpx;
+$uni-spacing-col-lg: 24rpx;
+
+/* 混入：高端卡片 */
+@mixin premium-card {
+  background: $uni-bg-color-secondary;
+  border: 1rpx solid $uni-border-color;
+  border-radius: $uni-border-radius-lg;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.2);
+}
+
+/* 混入：点击反馈 */
+@mixin press-effect {
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  &:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+}
+
+/* 混入：毛玻璃效果 */
+@mixin glass-effect {
+  background: rgba(28, 28, 30, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1rpx solid rgba(255, 255, 255, 0.05);
+}
+
