@@ -48,6 +48,10 @@
       </view>
     </view>
 
+    <!-- 隐藏画布用于保存合成图片 -->
+    <canvas type="2d" id="saveCanvas" 
+      style="position: fixed; left: -9999px; top: -9999px; width: 10px; height: 10px; pointer-events: none;">
+    </canvas>
   </view>
 </template>
 
@@ -98,7 +102,7 @@ export default {
         })
 
         // 2. 调用百度 API
-          this.resultBase64 = await segmentHuman(base64)
+        const fgBase64 = await segmentHuman(base64)
 
         // 3. 将 base64 转为临时文件用于显示
         const fs = uni.getFileSystemManager()
@@ -132,16 +136,76 @@ export default {
 
     async saveImage() {
       if (!this.resultImage) return
-      uni.showLoading({ title: '保存中...' })
+
+      // 若为透明背景，直接保存
+      if (this.bgMode === 'transparent') {
+        uni.showLoading({ title: '保存中...' })
+        try {
+          await saveToAlbum(this.resultImage)
+          uni.hideLoading()
+          uni.showToast({ title: '已保存到相册', icon: 'success' })
+        } catch (e) {
+          uni.hideLoading()
+          if (e.message !== '已取消') {
+            uni.showToast({ title: '保存失败', icon: 'none' })
+          }
+        }
+        return
+      }
+
+      // 若选择了颜色，则使用 Canvas 绘制背景
+      uni.showLoading({ title: '图片合成中...' })
       try {
-        await saveToAlbum(this.resultImage)
-        uni.hideLoading()
-        uni.showToast({ title: '已保存到相册', icon: 'success' })
+        const imgInfo = await new Promise((resolve, reject) => {
+          uni.getImageInfo({ src: this.resultImage, success: resolve, fail: reject })
+        })
+
+        const query = uni.createSelectorQuery().in(this)
+        query.select('#saveCanvas').fields({ node: true, size: true }).exec(async (res) => {
+          try {
+            if (!res[0] || !res[0].node) throw new Error('查找画布节点失败')
+            const canvas = res[0].node
+            const ctx = canvas.getContext('2d')
+            
+            // 设置画布尺寸和原图一致，保证无损清晰度
+            canvas.width = imgInfo.width
+            canvas.height = imgInfo.height
+            
+            // 填充背景
+            ctx.fillStyle = this.bgMode === 'white' ? '#FFFFFF' : '#000000'
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
+            
+            // 绘制前景
+            const img = canvas.createImage()
+            await new Promise((resolveImg, rejectImg) => {
+              img.onload = resolveImg
+              img.onerror = rejectImg
+              img.src = this.resultImage
+            })
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+            
+            // 导出图像
+            const exportedPath = await new Promise((resolveExp, rejectExp) => {
+              uni.canvasToTempFilePath({
+                canvas,
+                fileType: 'jpg',
+                quality: 1,
+                success: (r) => resolveExp(r.tempFilePath),
+                fail: rejectExp
+              }, this)
+            })
+
+            await saveToAlbum(exportedPath)
+            uni.hideLoading()
+            uni.showToast({ title: '已合成并保存', icon: 'success' })
+          } catch(err) {
+            uni.hideLoading()
+            uni.showToast({ title: '合成失败', icon: 'none' })
+          }
+        })
       } catch (e) {
         uni.hideLoading()
-        if (e.message !== '已取消') {
-          uni.showToast({ title: '保存失败', icon: 'none' })
-        }
+        uni.showToast({ title: '读取图片失败', icon: 'none' })
       }
     },
 

@@ -380,10 +380,24 @@ export async function generatePrintLayout({ photoPath, photoW, photoH, paper, ca
 // ─────────────────────────────────────────────
 // 核心4：保存图片到相册（带权限引导）
 // ─────────────────────────────────────────────
-export function saveToAlbum(filePath) {
+export function saveToAlbum(filePathOrBase64) {
   return new Promise((resolve, reject) => {
+    // 如果是 base64，先转成临时文件
+    let targetPath = filePathOrBase64;
+    if (targetPath.startsWith('data:image')) {
+      const fs = uni.getFileSystemManager();
+      const base64Data = targetPath.replace(/^data:image\/\w+;base64,/, '');
+      const tempPath = `${uni.env.USER_DATA_PATH}/save_temp_${Date.now()}.png`;
+      try {
+        fs.writeFileSync(tempPath, base64Data, 'base64');
+        targetPath = tempPath;
+      } catch (e) {
+        return reject(new Error('转换图片失败'));
+      }
+    }
+
     uni.saveImageToPhotosAlbum({
-      filePath,
+      filePath: targetPath,
       success: () => resolve(),
       fail: (err) => {
         const isDenied = err.errMsg && (

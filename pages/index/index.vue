@@ -3,7 +3,7 @@
     <!-- 顶部标题区 -->
     <view class="header">
       <text class="title">AI 影像工具箱</text>
-      <text class="subtitle">一站式智能图像处理</text>
+      <text class="subtitle">{{ greeting }}，需要处理照片吗？</text>
     </view>
 
     <!-- Bento Grid 布局工具区 -->
@@ -12,77 +12,107 @@
       <!-- 核心工具：智能证件照 (大卡片) -->
       <view class="bento-item bento-large" @click="navTo('/pages/id-photo/index')" hover-class="bento-hover">
         <view class="bento-bg-gradient id-photo-bg"></view>
-        <view class="bento-content">
-          <view class="bento-icon-wrap">
+        <view class="bento-content bento-content-horizontal">
+          <view class="bento-text bento-text-horizontal">
+            <text class="bento-title">智能证件照</text>
+            <text class="bento-desc">行业标杆，发丝级抠图换底，支持百种规格，高清无损排版。</text>
+          </view>
+          <view class="bento-icon-wrap large-icon-wrap float-anim">
             <text class="bento-icon">📸</text>
           </view>
-          <view class="bento-text">
-            <text class="bento-title">智能证件照</text>
-            <text class="bento-desc">AI 抠图换底色，支持多种规格，一键生成高清证件照及排版图。</text>
-          </view>
         </view>
-        <view class="bento-arrow"></view>
+        <view class="bento-arrow">➔</view>
       </view>
 
-      <!-- 次级工具：AI 抠图 (中卡片) -->
-      <view class="bento-item bento-medium" @click="navTo('/pages/matting/index')" hover-class="bento-hover">
-        <view class="bento-bg-gradient matting-bg"></view>
+      <!-- 趣味爆款：二次元化身 (中卡片) -->
+      <view class="bento-item bento-medium" @click="navTo('/pages/anime/index')" hover-class="bento-hover">
+        <view class="bento-bg-gradient anime-bg"></view>
         <view class="bento-content">
-          <view class="bento-icon-wrap">
+          <view class="bento-icon-wrap float-anim" style="animation-delay: 0.2s;">
+            <text class="bento-icon">🪄</text>
+          </view>
+          <view class="bento-text">
+            <text class="bento-title">二次元化身</text>
+            <text class="bento-desc">一秒破壁，专属动漫头像</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 趣味爆款：魔法老照片 (中卡片) -->
+      <view class="bento-item bento-medium" @click="navTo('/pages/colorize/index')" hover-class="bento-hover">
+        <view class="bento-bg-gradient colorize-bg"></view>
+        <view class="bento-content">
+          <view class="bento-icon-wrap float-anim" style="animation-delay: 0.4s;">
+            <text class="bento-icon">🕰️</text>
+          </view>
+          <view class="bento-text">
+            <text class="bento-title">魔法老照片</text>
+            <text class="bento-desc">AI上色，黑白记忆重现</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 实用工具：AI 抠图 (小卡片) -->
+      <view class="bento-item bento-small" @click="navTo('/pages/matting/index')" hover-class="bento-hover">
+        <view class="bento-bg-gradient matting-bg"></view>
+        <view class="bento-content bento-content-row">
+          <view class="bento-icon-wrap small-icon-wrap">
             <text class="bento-icon">✂️</text>
           </view>
           <view class="bento-text">
             <text class="bento-title">AI 抠图</text>
-            <text class="bento-desc">发丝级精准抠图，轻松提取主体</text>
+            <text class="bento-desc">精准提取</text>
           </view>
         </view>
       </view>
 
-      <!-- 次级工具：画质增强 (中卡片) -->
-      <view class="bento-item bento-medium" @click="navTo('/pages/enhance/index')" hover-class="bento-hover">
+      <!-- 实用工具：画质增强 (小卡片) -->
+      <view class="bento-item bento-small" @click="navTo('/pages/enhance/index')" hover-class="bento-hover">
         <view class="bento-bg-gradient enhance-bg"></view>
-        <view class="bento-content">
-          <view class="bento-icon-wrap">
+        <view class="bento-content bento-content-row">
+          <view class="bento-icon-wrap small-icon-wrap">
             <text class="bento-icon">✨</text>
           </view>
           <view class="bento-text">
             <text class="bento-title">画质增强</text>
-            <text class="bento-desc">老照片修复，模糊图片变清晰</text>
+            <text class="bento-desc">模糊变清晰</text>
           </view>
-        </view>
       </view>
-
+    </view>
+    <!-- 结束 bento-grid -->
     </view>
 
-    <!-- 最近文件 -->
+    <!-- 专业生产力 & 创意工坊 -->
     <view class="section">
       <view class="section-header">
-        <text class="section-title">最近文件</text>
-        <text v-if="recentFiles.length > 0" class="section-action" @click="clearHistory">清空历史</text>
+        <text class="section-title">✨ 高级玩法</text>
       </view>
-      <scroll-view class="recent-files-scroll" scroll-x>
-        <view class="recent-files-list">
-          <view v-if="recentFiles.length === 0" class="empty-tip">
-            <text class="empty-icon">�</text>
-            <text class="empty-text">暂无最近文件，快去创作吧</text>
+      <view class="pro-tools-grid">
+        
+        <!-- 智能去水印 -->
+        <view class="pro-tool-card" @click="navTo('/pages/eraser/index?type=watermark')" hover-class="chip-hover">
+          <view class="pro-tool-icon-bg bg-blue">
+            <text class="pro-tool-icon">💧</text>
           </view>
-          <view
-            class="recent-item"
-            v-for="(file, index) in recentFiles"
-            :key="index"
-            @click="openRecent(file)"
-            hover-class="bento-hover"
-          >
-            <image class="recent-preview" :src="file.tempFilePath" mode="aspectFill" />
-            <view class="recent-info">
-              <text class="recent-title">{{ file.type || '证件照' }}</text>
-              <text class="recent-time">{{ formatTime(file.timestamp) }}</text>
-            </view>
+          <view class="pro-tool-text">
+            <text class="pro-tool-title">智能去水印</text>
+            <text class="pro-tool-desc">一键擦除图片杂物与水印</text>
           </view>
         </view>
-      </scroll-view>
-    </view>
 
+        <!-- 魔法去路人 -->
+        <view class="pro-tool-card" @click="navTo('/pages/eraser/index?type=eraser')" hover-class="chip-hover">
+          <view class="pro-tool-icon-bg bg-purple">
+            <text class="pro-tool-icon">🧹</text>
+          </view>
+          <view class="pro-tool-text">
+            <text class="pro-tool-title">魔法去路人</text>
+            <text class="pro-tool-desc">智能涂鸦，完美剔除背景路人</text>
+          </view>
+        </view>
+
+      </view>
+    </view>
 
     <!-- 底部信息 -->
     <view class="footer">
@@ -96,44 +126,23 @@ export default {
   name: 'IndexPage',
   data() {
     return {
-      recentFiles: []
+      greeting: '您好'
     }
   },
   onShow() {
-    this.loadRecentFiles();
+    this.updateGreeting();
   },
   methods: {
+    updateGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 5) this.greeting = '夜深了';
+      else if (hour < 11) this.greeting = '早上好';
+      else if (hour < 13) this.greeting = '中午好';
+      else if (hour < 18) this.greeting = '下午好';
+      else this.greeting = '晚上好';
+    },
     navTo(url) {
       uni.navigateTo({ url })
-    },
-    loadRecentFiles() {
-      const files = uni.getStorageSync('processed_files') || [];
-      this.recentFiles = files.sort((a, b) => b.timestamp - a.timestamp);
-    },
-    openRecent(file) {
-      // 这里假设点击最近文件是跳转到结果页，您可以根据实际需求修改
-      uni.navigateTo({ url: `/pages/result/index?tempFilePath=${encodeURIComponent(file.tempFilePath)}` });
-    },
-    clearHistory() {
-      uni.showModal({
-        title: '确认操作',
-        content: '确定要清空所有历史记录吗？',
-        success: (res) => {
-          if (res.confirm) {
-            uni.removeStorageSync('processed_files');
-            this.recentFiles = [];
-            uni.showToast({ title: '已清空', icon: 'success' });
-          }
-        }
-      });
-    },
-    formatTime(timestamp) {
-      const date = new Date(timestamp);
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      return `${month}月${day}日 ${hours}:${minutes}`;
     }
   }
 }
@@ -176,28 +185,59 @@ page { background: #000000; }
 /* 背景渐变层 */
 .bento-bg-gradient {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  opacity: 0.15; pointer-events: none;
+  opacity: 0.15; pointer-events: none; transition: opacity 0.3s ease;
 }
-.id-photo-bg { background: radial-gradient(circle at top right, #E6C875, transparent 70%); }
-.matting-bg  { background: radial-gradient(circle at bottom right, #34C759, transparent 70%); }
-.enhance-bg  { background: radial-gradient(circle at bottom left, #0A84FF, transparent 70%); }
+.bento-hover .bento-bg-gradient { opacity: 0.25; }
 
-/* 卡片内容布局 */
+.id-photo-bg { background: radial-gradient(circle at top right, #E6C875, transparent 70%); }
+.anime-bg    { background: radial-gradient(circle at bottom right, #34C759, transparent 70%); }
+.colorize-bg { background: radial-gradient(circle at bottom left, #FF9F0A, transparent 70%); }
+.matting-bg  { background: radial-gradient(circle at top left, #30A852, transparent 60%); }
+.enhance-bg  { background: radial-gradient(circle at top right, #0A84FF, transparent 60%); }
+
+/* 卡片类型与排版 */
+.bento-large { grid-column: span 2; min-height: 260rpx; }
+.bento-medium { min-height: 280rpx; }
+.bento-small { min-height: 160rpx; }
+
+/* 内部 flex */
 .bento-content {
   position: relative; z-index: 1;
   padding: 32rpx; height: 100%; box-sizing: border-box;
   display: flex; flex-direction: column;
 }
+.bento-content-horizontal { flex-direction: row; align-items: center; justify-content: space-between; }
+.bento-content-row { flex-direction: row; align-items: center; gap: 24rpx; padding: 24rpx; }
+
+/* Icon 包裹器 */
 .bento-icon-wrap {
   width: 80rpx; height: 80rpx; border-radius: 24rpx;
   background: rgba(255, 255, 255, 0.05);
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 24rpx;
+  margin-bottom: 24rpx; flex-shrink: 0;
 }
+.large-icon-wrap { width: 120rpx; height: 120rpx; border-radius: 40rpx; background: rgba(230,200,117,0.1); margin-bottom: 0; }
+.large-icon-wrap .bento-icon { font-size: 60rpx; }
+.small-icon-wrap { width: 64rpx; height: 64rpx; border-radius: 20rpx; margin-bottom: 0; }
 .bento-icon { font-size: 40rpx; }
+.small-icon-wrap .bento-icon { font-size: 32rpx; }
+
+/* 缓动漂浮动画 */
+@keyframes floatAnim {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8rpx); }
+  100% { transform: translateY(0); }
+}
+.float-anim { animation: floatAnim 4s ease-in-out infinite; }
+
+/* 文案 */
 .bento-text { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+.bento-text-horizontal { justify-content: center; padding-right: 32rpx; }
 .bento-title { font-size: 32rpx; font-weight: 700; color: #E8E0D0; margin-bottom: 8rpx; }
 .bento-desc { font-size: 22rpx; color: #8E8E93; line-height: 1.5; }
+
+/* 箭头 */
+.bento-arrow { position: absolute; right: 32rpx; bottom: 32rpx; color: #E6C875; font-size: 28rpx; opacity: 0.5; }
 
 /* 大卡片 (跨两列) */
 .bento-large {
@@ -233,45 +273,67 @@ page { background: #000000; }
   min-height: 280rpx;
 }
 
-/* 最近文件 Section */
+/* 快捷直达 & 探索发现 Section */
 .section { margin-bottom: 48rpx; }
 .section-header {
-  display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 24rpx; padding: 0 8rpx;
 }
 .section-title { font-size: 36rpx; font-weight: 700; color: #E8E0D0; }
-.section-action { font-size: 24rpx; color: #8E8E93; }
 
-.recent-files-scroll { width: 100%; }
-.recent-files-list { display: flex; gap: 24rpx; padding-bottom: 16rpx; }
-
-.empty-tip {
-  width: 100%;
-  height: 240rpx;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: #1C1C1E; border-radius: 32rpx;
-  border: 1rpx dashed rgba(255, 255, 255, 0.1);
+/* 高级玩法网格 */
+.pro-tools-grid {
+  display: flex; flex-direction: column; gap: 24rpx;
 }
-.empty-icon { font-size: 64rpx; margin-bottom: 16rpx; }
-.empty-text { font-size: 26rpx; color: #8E8E93; }
+.pro-tool-card {
+  background: #1C1C1E; border: 1rpx solid rgba(255, 255, 255, 0.05);
+  border-radius: 32rpx; padding: 32rpx;
+  display: flex; align-items: center; gap: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+.chip-hover { transform: scale(0.97); box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.1); }
 
-.recent-item {
-  width: 240rpx; height: 240rpx;
+.pro-tool-icon-bg {
+  width: 96rpx; height: 96rpx; border-radius: 28rpx;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  position: relative;
-  background: #1C1C1E; border-radius: 32rpx;
-  overflow: hidden;
-  border: 1rpx solid rgba(255, 255, 255, 0.05);
 }
-.recent-preview {
-  width: 100%; height: 100%;
+.bg-purple { background: linear-gradient(135deg, rgba(175, 82, 222, 0.2), rgba(175, 82, 222, 0.05)); border: 1rpx solid rgba(175, 82, 222, 0.3); }
+.bg-blue   { background: linear-gradient(135deg, rgba(10, 132, 255, 0.2), rgba(10, 132, 255, 0.05)); border: 1rpx solid rgba(10, 132, 255, 0.3); }
+.bg-orange { background: linear-gradient(135deg, rgba(255, 149, 0, 0.2), rgba(255, 149, 0, 0.05)); border: 1rpx solid rgba(255, 149, 0, 0.3); }
+
+.pro-tool-icon { font-size: 48rpx; }
+.pro-tool-text { display: flex; flex-direction: column; gap: 8rpx; }
+.pro-tool-title { font-size: 32rpx; font-weight: 700; color: #E8E0D0; }
+.pro-tool-desc { font-size: 24rpx; color: #8E8E93; }
+
+/* 探索 Banner */
+.banner-section { margin-top: 64rpx; }
+.explore-banner {
+  position: relative; height: 200rpx; border-radius: 32rpx; overflow: hidden;
+  background: #1C1C1E; border: 1rpx solid rgba(255, 255, 255, 0.1);
+  display: flex; align-items: center; padding: 0 40rpx;
+  transition: all 0.2s ease;
 }
-.recent-info {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  padding: 16rpx; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+.explore-bg {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(175,82,222,0.2), rgba(10,132,255,0.1));
+  pointer-events: none;
 }
-.recent-title { display: block; font-size: 24rpx; font-weight: 600; color: #E8E0D0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.recent-time { display: block; font-size: 20rpx; color: #8E8E93; }
+.banner-hover { transform: scale(0.98); box-shadow: 0 8rpx 32rpx rgba(175,82,222,0.2); }
+.explore-content { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 8rpx; }
+.explore-tag { 
+  align-self: flex-start;
+  background: linear-gradient(90deg, #FF9F0A, #FF453A);
+  color: #FFF; font-size: 20rpx; font-weight: 900; padding: 4rpx 16rpx; border-radius: 12rpx;
+}
+.explore-title { font-size: 34rpx; font-weight: 800; color: #FFFFFF; }
+.explore-sub { font-size: 24rpx; color: #A0A0A5; }
+.explore-decoration {
+  position: absolute; right: 40rpx; top: 50%; transform: translateY(-50%);
+  font-size: 80rpx; opacity: 0.8;
+  animation: floatAnim 3s infinite ease-in-out;
+}
 
 /* 底部 */
 .footer { margin-top: 64rpx; text-align: center; }

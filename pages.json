@@ -86,6 +86,30 @@
         "navigationBarBackgroundColor": "#000000",
         "navigationBarTextStyle": "white"
       }
+    },
+    {
+      "path": "pages/anime/index",
+      "style": {
+        "navigationBarTitleText": "二次元化身",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/colorize/index",
+      "style": {
+        "navigationBarTitleText": "魔法老照片",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/eraser/index",
+      "style": {
+        "navigationBarTitleText": "智能去水印",
+        "navigationBarBackgroundColor": "#000000",
+        "navigationBarTextStyle": "white"
+      }
     }
   ],
   "globalStyle": {
