@@ -26,3 +26,6 @@ yarn-error.log*
 
 # 临时文件
 *.swp
+
+# 本地密钥配置（包含真实 API Key，不提交到 Git）
+utils/config.local.js

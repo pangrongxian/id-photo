@@ -8,7 +8,8 @@
     "build:mp-weixin": "uni build -p mp-weixin"
   },
   "dependencies": {
+    "@volcengine/openapi": "^1.36.1",
+    "crypto-js": "^4.2.0",
     "pinia": "^2.1.7"
-  },
-  "devDependencies": {}
+  }
 }

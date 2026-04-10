@@ -82,7 +82,8 @@
 </template>
 
 <script>
-import { inpaintImage, enhanceImage } from '../../utils/baidu.js'
+import { enhanceImage } from '../../utils/baidu.js'
+import { inpaintImageVolc } from '../../utils/volcengine.js'
 import { saveToAlbum } from '../../utils/canvas.js'
 
 export default {
@@ -297,11 +298,38 @@ export default {
             })
           })
         }
+        // 第三步：利用不可见 Canvas 生成符合火山引擎规范的单通道黑白 Mask 图 (黑底白框)
+        const maskBase64 = await new Promise((resolve, reject) => {
+          const query = uni.createSelectorQuery().in(this)
+          query.select('#computeCanvas').fields({ node: true, size: true }).exec((res) => {
+            if (!res[0] || !res[0].node) {
+              return reject(new Error('无法初始化系统画板以生成遮罩'))
+            }
+            const canvas = res[0].node
+            const ctx = canvas.getContext('2d')
+            
+            // 设置物理像素
+            canvas.width = this.imgInfo.width
+            canvas.height = this.imgInfo.height
+            
+            // 铺满黑底 (0 = 保持原图部分)
+            ctx.fillStyle = '#000000'
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
+            
+            // 绘制白色涂抹选区 (255 = 待消除区域)
+            ctx.fillStyle = '#FFFFFF'
+            validRects.forEach(r => {
+              ctx.fillRect(r.left, r.top, r.width, r.height)
+            })
+            
+            // 导出 Base64
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
+            resolve(dataUrl.split(',')[1])
+          })
+        })
         
-        // 第三步：调用 inpainting API 消除水印
-        const inpaintedBase64 = await inpaintImage(base64, validRects)
-
-        // 第四步：对消除结果调用图像清晰度增强，改善 AI 填充区域的模糊问题
+        // 第四步：调用火山引擎 API 消除水印
+        const inpaintedBase64 = await inpaintImageVolc(base64, maskBase64)
         this.processingText = '画质优化中...'
         let finalBase64 = inpaintedBase64
         try {

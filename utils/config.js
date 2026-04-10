@@ -5,12 +5,17 @@
 // 百度AI API配置
 // 申请地址：https://ai.baidu.com → 人体分析 → 人像分割
 export const BAIDU_CONFIG = {
-  API_KEY: 'reQTFkIWz95hULNxcGhoyUhB',
-  SECRET_KEY: 'IscRLpsJIL1yLyBPTCFXovrxt3JFa0uJ',
+  API_KEY: '',           // 百度AI API_KEY，本地填入，不提交
+  SECRET_KEY: '',        // 百度AI SECRET_KEY，本地填入，不提交
 
-  // 新增：图像特效专用 Key（请填入你刚才截图那个页面的应用 Key）
-  EFFECTS_API_KEY: 'mwYYGCPR11smalcjMcUd0lGJ',
-  EFFECTS_SECRET_KEY: 'qzmBuOnLcAGcXswbI3hBz029Sk0jDEU1',
+  // 新增：图像特效专用 Key
+  EFFECTS_API_KEY: '',   // 百度特效 API_KEY，本地填入，不提交
+  EFFECTS_SECRET_KEY: '', // 百度特效 SECRET_KEY，本地填入，不提交
+
+  // 火山引擎配置 (Inpainting 涂抹消除)
+  VOLC_AK: '',           // 火山引擎 AccessKey，本地填入，不提交
+  VOLC_SK: '',           // 火山引擎 SecretKey，本地填入，不提交
+  VOLC_HOST: 'visual.volcengineapi.com',
 
   TOKEN_URL: 'https://aip.baidubce.com/oauth/2.0/token',
   SEGMENT_URL: 'https://aip.baidubce.com/rest/2.0/image-classify/v1/body_seg',
